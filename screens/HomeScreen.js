@@ -1,5 +1,5 @@
 import * as WebBrowser from 'expo-web-browser';
-import React from 'react';
+import React, { Component } from 'react'
 import {
   Image,
   Platform,
@@ -11,64 +11,60 @@ import {
   TextInput
 } from 'react-native';
 
-export default function HomeScreen() {
-  const codeExample = ""
-  return (
-    <View style={styles.container}>
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.contentContainer}>
-        <View style={styles.welcomeContainer}>
-          <Image
-            source={
-              __DEV__
-                ? require('../assets/images/hpLogo.png')
-                : require('../assets/images/robot-prod.png')
-            }
-            style={styles.welcomeImage}
-          />
-        </View>
-
-        <View style={styles.getStartedContainer}>
-          <DevelopmentModeNotice />
-          <View
-            style={[styles.codeHighlightContainer, styles.homeScreenFilename]}>
-            <Text>screens/HomeScreen.js</Text>
+export default class HomeScreen extends Component {
+  render(){
+    const {  screenProps } = this.props
+    console.log(screenProps)
+    return (
+      <View style={styles.container}>
+        <ScrollView
+          style={styles.container}
+          contentContainerStyle={styles.contentContainer}>
+          <View style={styles.welcomeContainer}>
+            <Image
+              source={
+                __DEV__
+                  ? require('../assets/images/hpLogo.png')
+                  : require('../assets/images/robot-prod.png')
+              }
+              style={styles.welcomeImage}
+            />
           </View>
-
-          <View
-
-          >
-            <TextInput
-      style={{ height: 40, borderColor: 'gray', borderWidth: 1 }}
-      onChangeText={text => handleCodeChange(text)}
-      value={''}
-    />
-
-
+  
+          <View style={styles.getStartedContainer}>
+            <DevelopmentModeNotice />
+            <View
+              style={[styles.codeHighlightContainer, styles.homeScreenFilename]}>
+              <Text>screens/HomeScreen.js</Text>
+            </View>
+  
+            <View
+  
+            >
+              <TextInput
+        style={{ height: 40, borderColor: 'gray', borderWidth: 1 }}
+        onChangeText={
+          (text) => screenProps.changeCode(text)}
+        value={screenProps.currentCode}
+      />
+      <Text>
+        {screenProps.currentCode}
+      </Text>
+  
+  
+            </View>
+  
+            <Text style={styles.getStartedText}>
+              Building... 
+            </Text>
           </View>
-
-          <Text style={styles.getStartedText}>
-            Change this text and your app will automatically reload.
-          </Text>
-        </View>
-
-      </ScrollView>
-
-      <View style={styles.tabBarInfoContainer}>
-        <Text style={styles.tabBarInfoText}>
-          This is a tab bar. You can edit it in:
-        </Text>
-
-        <View
-          style={[styles.codeHighlightContainer, styles.navigationFilename]}>
-          <Text style={styles.codeHighlightText}>
-            navigation/MainTabNavigator.js
-          </Text>
-        </View>
+  
+        </ScrollView>
+  
       </View>
-    </View>
-  );
+    );
+  }
+ 
 }
 
 HomeScreen.navigationOptions = {
