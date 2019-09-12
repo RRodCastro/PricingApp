@@ -8,13 +8,15 @@ import {
   Text,
   TouchableOpacity,
   View,
-  TextInput
+  TextInput,
+  Label
 } from 'react-native';
+
+import { Button, Input } from 'react-native-elements'
 
 export default class HomeScreen extends Component {
   render(){
     const {  screenProps } = this.props
-    console.log(screenProps)
     return (
       <View style={styles.container}>
         <ScrollView
@@ -33,34 +35,31 @@ export default class HomeScreen extends Component {
   
           <View style={styles.getStartedContainer}>
             <DevelopmentModeNotice />
-            <View
-              style={[styles.codeHighlightContainer, styles.homeScreenFilename]}>
-              <Text>screens/HomeScreen.js</Text>
-            </View>
+            
   
-            <View
-  
-            >
+            <View>
+              <Text style={{fontWeight: 'bold'}}>
+                Código producto
+              </Text>
               <TextInput
-        style={{ height: 40, borderColor: 'gray', borderWidth: 1 }}
-        onChangeText={
-          (text) => screenProps.changeCode(text)}
-        value={screenProps.currentCode}
-      />
-      <Text>
-        {screenProps.currentCode}
-      </Text>
-  
-  
+                style={{ height: 25, width: 120, borderColor: 'gray', borderWidth: 1 }}
+                onChangeText={(text) => screenProps.changeCode(text)}
+                value={screenProps.currentCode}
+              />
             </View>
-  
-            <Text style={styles.getStartedText}>
-              Building... 
-            </Text>
+            <View style={{margin: 10}}>
+                <Input
+                  value={screenProps.currentCode}
+                  label="Código Producto"
+                  onChangeText={(text) => screenProps.changeCode(text)}
+                  fontWeight='Bold'
+                  errorMessage={''}
+                >
+                </Input>
+            </View>
+            <Button onPress={screenProps.sendHandle} buttonStylestyle='outline' title="Enviar" />
           </View>
-  
         </ScrollView>
-  
       </View>
     );
   }
@@ -96,16 +95,6 @@ function DevelopmentModeNotice() {
 function handleLearnMorePress() {
   WebBrowser.openBrowserAsync(
     'https://google.com'
-  );
-}
-
-function handleCodeChange(codeText) {
-  console.log(codeText)
-}
-
-function handleHelpPress() {
-  WebBrowser.openBrowserAsync(
-    'https://docs.expo.io/versions/latest/workflow/up-and-running/#cant-see-your-changes'
   );
 }
 

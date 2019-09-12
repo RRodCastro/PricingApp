@@ -48,8 +48,11 @@ export default class App extends React.Component {
     this.setState({isLoadingComplete: true});
   }
 
-  handleChange = (text) => {
-    const currentCode = text
+  handleChange = (currentCode) => {
+    this.setState({currentCode})
+  }
+  handleSend = () =>{
+    const currentCode = ''
     this.setState({currentCode})
   }
   render(){
@@ -69,7 +72,8 @@ export default class App extends React.Component {
           <AppNavigator
             screenProps = {{
               currentCode: this.state.currentCode,
-              changeCode: this.handleChange
+              changeCode: this.handleChange,
+              sendHandle: this.handleSend
             }}
           />
         </Provider>
