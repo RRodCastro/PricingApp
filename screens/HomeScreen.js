@@ -27,7 +27,7 @@ export default class HomeScreen extends Component {
               source={
                 __DEV__
                   ? require('../assets/images/hpLogo.png')
-                  : require('../assets/images/robot-prod.png')
+                  : require('../assets/images/hpLogo.png')
               }
               style={styles.welcomeImage}
             />
@@ -107,7 +107,11 @@ export default class HomeScreen extends Component {
 
 
             </View>
-            <Button  onPressOut={() => screenProps.stateReducer("SumbitButton", "")} buttonStylestyle='outline' title="Enviar" />
+            <Button
+              onPressOut={() => screenProps.stateReducer("SumbitButton", "")}
+              buttonStylestyle='outline'
+              title="Enviar"
+            />
           </View>
         </ScrollView>
       </View>

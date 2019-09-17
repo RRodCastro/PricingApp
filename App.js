@@ -7,8 +7,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { Provider } from 'react-redux';
 import { createStore, applyMiddleware, compose } from 'redux'
 import appReducers from './reducers/reducers';
+import { AsyncStorage } from 'react-native';import AppNavigator from './navigation/AppNavigator';
 
-import AppNavigator from './navigation/AppNavigator';
 
 const store = createStore(appReducers);
 
@@ -20,15 +20,32 @@ export default class App extends React.Component {
       currentCode: '',
       inventoryPrice: '',
       salePrice: '',
-      hasDiscount: false
+      hasDiscount: false,
+      employeeCode: ''
     }
   }
+
+  _retrieveData = async () => {
+    try {
+      const value = await AsyncStorage.getItem('HPCode');
+      if (value !== null) {
+        const employeeCode = value
+        this.setState({employeeCode})
+        console.log("something..")
+        employeeCode = value
+        console.log(value);
+      }
+      else{
+        console.log("none data..")
+      }
+    } catch (error) {
+      // Error retrieving data
+    }
+  };
 
   loadResourcesAsync = async() => {
     return Promise.all([
       Asset.loadAsync([
-        require('./assets/images/robot-dev.png'),
-        require('./assets/images/robot-prod.png'),
         require('./assets/images/hpLogo.png')
       ]),
       Font.loadAsync({
@@ -38,7 +55,9 @@ export default class App extends React.Component {
         // remove this if you are not using it in your app
         'space-mono': require('./assets/fonts/SpaceMono-Regular.ttf'),
       }),
-    ]);
+    ],
+    this._retrieveData()
+    );
   }
   
   handleLoadingError = error => {
@@ -51,6 +70,16 @@ export default class App extends React.Component {
     this.setState({isLoadingComplete: true});
   }
 
+  _storeData = async () => {
+    try {
+      await AsyncStorage.setItem('HPCode', 'I like to save it.');
+      const employeeCode = '9008'
+      this.setState({employeeCode})
+    } catch (error) {
+      console.log(error)
+    }
+  };
+
 
   stateReducer = (reducer, newState) => {
     switch(reducer){
@@ -62,6 +91,7 @@ export default class App extends React.Component {
         break;
       case "SumbitButton":
         alert("Sending...")
+        this._storeData()
         break
       case "inventoryPrice":
         const inventoryPrice = newState
@@ -78,6 +108,8 @@ export default class App extends React.Component {
     }
   }
   render(){
+    console.log("current state")
+    console.log(this.state.employeeCode)
     if (!this.state.isLoadingComplete && !this.props.skipLoadingScreen ){
       return (
         <AppLoading
