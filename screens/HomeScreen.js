@@ -12,11 +12,11 @@ import {
   Label
 } from 'react-native';
 
-import { Button, Input } from 'react-native-elements'
+import { Button, Input, CheckBox } from 'react-native-elements'
 
 export default class HomeScreen extends Component {
-  render(){
-    const {  screenProps } = this.props
+  render() {
+    const { screenProps } = this.props
     return (
       <View style={styles.container}>
         <ScrollView
@@ -32,38 +32,88 @@ export default class HomeScreen extends Component {
               style={styles.welcomeImage}
             />
           </View>
-  
+
           <View style={styles.getStartedContainer}>
             <DevelopmentModeNotice />
-            
-  
-            <View>
-              <Text style={{fontWeight: 'bold'}}>
-                Código producto
-              </Text>
-              <TextInput
-                style={{ height: 25, width: 120, borderColor: 'gray', borderWidth: 1 }}
-                onChangeText={(text) => screenProps.changeCode(text)}
-                value={screenProps.currentCode}
+
+
+            <View style={{ margin: 10 }}>
+              <Input
+                keyboardType='default'
+                value={screenProps.state.currentCode}
+                label="Código Producto     "
+                onChangeText={(text) => screenProps.stateReducer("ProductCode", text)}
+                fontWeight='Bold'
+                errorMessage={''}
+                placeholder={''}
+              >
+              </Input>
+            </View>
+
+            <View style={{ margin: 10 }}>
+              <Input
+                keyboardType='numeric'
+                value={screenProps.state.inventoryPrice}
+                label="Precio Inventario     "
+                onChangeText={(text) => screenProps.stateReducer( "inventoryPrice",text)}
+                fontWeight='Bold'
+                errorMessage={''}
+                placeholder={''}
+              >
+              </Input>
+            </View>
+
+            <View style={{ margin: 10 }}>
+              <Input
+                keyboardType='numeric'
+                value={screenProps.state.currentPrice}
+                label="Precio Consumidor  "
+                onChangeText={(text) => screenProps.stateReducer( "salePrice",text)}
+                fontWeight='Bold'
+                errorMessage={''}
+                placeholder={''}
+              >
+              </Input>
+            </View>
+
+
+
+            <View  style={{margin: 10 }}
+
+            >
+              <Text style={{ fontSize:16, textAlign: 'center', color: 'rgb(134,147,158)', fontWeight: 'bold'}}>¿Producto ofertado?</Text>
+              <View  style={{flexDirection:'row', flexWrap:'wrap'}}>
+              <CheckBox
+
+                center
+                title="Si"
+                checkedIcon='dot-circle-o'
+                uncheckedIcon='circle-o'
+                checked={screenProps.state.hasDiscount}
+                size={11}
+                onPress={() => screenProps.stateReducer("Disccount", true)}
               />
+              <CheckBox
+                center
+                title="No"
+                checkedIcon='dot-circle-o'
+                uncheckedIcon='circle-o'
+                checked={!screenProps.state.hasDiscount}
+                size={11}
+                onPress={() => screenProps.stateReducer("Disccount", false)}
+              />
+              <View/>
             </View>
-            <View style={{margin: 10}}>
-                <Input
-                  value={screenProps.currentCode}
-                  label="Código Producto"
-                  onChangeText={(text) => screenProps.changeCode(text)}
-                  fontWeight='Bold'
-                  errorMessage={''}
-                >
-                </Input>
+
+
             </View>
-            <Button onPress={screenProps.sendHandle} buttonStylestyle='outline' title="Enviar" />
+            <Button  onPressOut={() => screenProps.stateReducer("SumbitButton", "")} buttonStylestyle='outline' title="Enviar" />
           </View>
         </ScrollView>
       </View>
     );
   }
- 
+
 }
 
 HomeScreen.navigationOptions = {
@@ -101,7 +151,7 @@ function handleLearnMorePress() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#40515b',
   },
   developmentModeText: {
     marginBottom: 20,
@@ -139,12 +189,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.05)',
     borderRadius: 3,
     paddingHorizontal: 4,
-  },
-  getStartedText: {
-    fontSize: 17,
-    color: 'rgba(96,100,109, 1)',
-    lineHeight: 24,
-    textAlign: 'center',
   },
   tabBarInfoContainer: {
     position: 'absolute',

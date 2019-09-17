@@ -17,7 +17,10 @@ export default class App extends React.Component {
     super(props)
     this.state = {
       isLoadingComplete: false,
-      currentCode: ''
+      currentCode: '',
+      inventoryPrice: '',
+      salePrice: '',
+      hasDiscount: false
     }
   }
 
@@ -48,12 +51,31 @@ export default class App extends React.Component {
     this.setState({isLoadingComplete: true});
   }
 
-  handleChange = (currentCode) => {
-    this.setState({currentCode})
-  }
-  handleSend = () =>{
-    const currentCode = ''
-    this.setState({currentCode})
+
+  stateReducer = (reducer, newState) => {
+    switch(reducer){
+      default:
+
+      case "ProductCode":
+        const currentCode = newState
+        this.setState({currentCode})
+        break;
+      case "SumbitButton":
+        alert("Sending...")
+        break
+      case "inventoryPrice":
+        const inventoryPrice = newState
+        this.setState({inventoryPrice})
+        break
+      case "Disccount":
+        const hasDiscount = newState
+        this.setState({hasDiscount})
+        break
+      case "salePrice":
+        const salePrice = newState
+        this.setState({salePrice})
+
+    }
   }
   render(){
     if (!this.state.isLoadingComplete && !this.props.skipLoadingScreen ){
@@ -63,7 +85,6 @@ export default class App extends React.Component {
           onError={this.handleLoadingError}
           onFinish={this.handleFinishLoading}
         />
-
       )
     }
     else {
@@ -71,9 +92,8 @@ export default class App extends React.Component {
         <Provider store={ store } >
           <AppNavigator
             screenProps = {{
-              currentCode: this.state.currentCode,
-              changeCode: this.handleChange,
-              sendHandle: this.handleSend
+              state: this.state,
+              stateReducer: this.stateReducer
             }}
           />
         </Provider>
