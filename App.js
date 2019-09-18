@@ -2,7 +2,7 @@ import { AppLoading } from 'expo';
 import { Asset } from 'expo-asset';
 import * as Font from 'expo-font';
 import React, { useState } from 'react';
-import { Platform, StatusBar, StyleSheet, View } from 'react-native';
+import { Platform, StatusBar, StyleSheet, View, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Provider } from 'react-redux';
 import { createStore, applyMiddleware, compose } from 'redux'
@@ -21,7 +21,8 @@ export default class App extends React.Component {
       inventoryPrice: '',
       salePrice: '',
       hasDiscount: false,
-      employeeCode: ''
+      employeeCode: '',
+      hasEmployeeCode: false
     }
   }
 
@@ -30,10 +31,8 @@ export default class App extends React.Component {
       const value = await AsyncStorage.getItem('HPCode');
       if (value !== null) {
         const employeeCode = value
-        this.setState({employeeCode})
-        console.log("something..")
-        employeeCode = value
-        console.log(value);
+        const hasEmployeeCode = true
+        this.setState({hasEmployeeCode})
       }
       else{
         console.log("none data..")
@@ -72,13 +71,30 @@ export default class App extends React.Component {
 
   _storeData = async () => {
     try {
-      await AsyncStorage.setItem('HPCode', 'I like to save it.');
-      const employeeCode = '9008'
-      this.setState({employeeCode})
+      if (!!this.state.employeeCode){
+      Alert.alert("Guardado",)
+      await AsyncStorage.setItem('HPCode', '8099');
+      const hasEmployeeCode = true
+      this.setState({hasEmployeeCode})
+    }
+    else{
+      Alert.alert("Error", "Debe ingresar código de empleado")
+    }
     } catch (error) {
       console.log(error)
     }
   };
+
+  _clearStoredData = async() => {
+
+    try{
+      await AsyncStorage.removeItem('HPCode')
+      const hasEmployeeCode = false
+      this.setState({hasEmployeeCode})
+    } catch (error){
+      console.log(error)
+    }
+  }
 
 
   stateReducer = (reducer, newState) => {
@@ -91,8 +107,9 @@ export default class App extends React.Component {
         break;
       case "SumbitButton":
         alert("Sending...")
-        this._storeData()
         break
+      case "RemoveButton":
+        this._clearStoredData()
       case "inventoryPrice":
         const inventoryPrice = newState
         this.setState({inventoryPrice})
@@ -104,12 +121,18 @@ export default class App extends React.Component {
       case "salePrice":
         const salePrice = newState
         this.setState({salePrice})
+      case "employeeCode":
+        const employeeCode = newState
+        this.setState({employeeCode})
+        break;
+      case "sendEmployeeCode":
+        this._storeData()
+        break;
+
 
     }
   }
   render(){
-    console.log("current state")
-    console.log(this.state.employeeCode)
     if (!this.state.isLoadingComplete && !this.props.skipLoadingScreen ){
       return (
         <AppLoading

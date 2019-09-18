@@ -15,8 +15,114 @@ import {
 import { Button, Input, CheckBox } from 'react-native-elements'
 
 export default class HomeScreen extends Component {
-  render() {
+
+  renderForm() {
     const { screenProps } = this.props
+    return (
+
+      <View style={styles.getStartedContainer}>
+        <View style={{ margin: 10 }}>
+          <Input
+            keyboardType='default'
+            value={screenProps.state.currentCode}
+            label="Código Producto     "
+            onChangeText={(text) => screenProps.stateReducer("ProductCode", text)}
+            fontWeight='Bold'
+            errorMessage={''}
+            placeholder={''}
+          >
+          </Input>
+        </View>
+
+        <View style={{ margin: 10 }}>
+          <Input
+            keyboardType='numeric'
+            value={screenProps.state.inventoryPrice}
+            label="Precio Inventario     "
+            onChangeText={(text) => screenProps.stateReducer("inventoryPrice", text)}
+            fontWeight='Bold'
+            errorMessage={''}
+            placeholder={''}
+          >
+          </Input>
+        </View>
+
+        <View style={{ margin: 10 }}>
+          <Input
+            keyboardType='numeric'
+            value={screenProps.state.currentPrice}
+            label="Precio Consumidor  "
+            onChangeText={(text) => screenProps.stateReducer("salePrice", text)}
+            fontWeight='Bold'
+            errorMessage={''}
+            placeholder={''}
+          >
+          </Input>
+        </View>
+        <View style={{ margin: 10 }}
+        >
+          <Text style={{ fontSize: 16, textAlign: 'center', color: 'rgb(134,147,158)', fontWeight: 'bold' }}>¿Producto ofertado?</Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+            <CheckBox
+
+              center
+              title="Si"
+              checkedIcon='dot-circle-o'
+              uncheckedIcon='circle-o'
+              checked={screenProps.state.hasDiscount}
+              size={11}
+              onPress={() => screenProps.stateReducer("Disccount", true)}
+            />
+            <CheckBox
+              center
+              title="No"
+              checkedIcon='dot-circle-o'
+              uncheckedIcon='circle-o'
+              checked={!screenProps.state.hasDiscount}
+              size={11}
+              onPress={() => screenProps.stateReducer("Disccount", false)}
+            />
+            <View />
+          </View>
+
+
+        </View>
+        <Button
+          onPressOut={() => screenProps.stateReducer("RemoveButton", "")}
+          buttonStylestyle='outline'
+          title="Enviar"
+        />
+      </View>
+    )
+  }
+
+  renderEmployeeForm() {
+    const {screenProps} = this.props
+    return (
+      <View style={styles.getStartedContainer}>
+        <View style={{ margin: 30 }}>
+          <Input
+            keyboardType='default'
+            value={screenProps.state.employeeCode}
+            label="Código Empleado:    "
+            onChangeText={(text) => screenProps.stateReducer("employeeCode", text)}
+            fontWeight='Bold'
+            errorMessage={''}
+            placeholder={''}
+          >
+          </Input>
+        </View>
+        <Button
+          onPressOut={() => screenProps.stateReducer("sendEmployeeCode", "")}
+          buttonStylestyle='outline'
+          title="Guardar código empleado"
+        />
+      </View>
+    )
+  }
+  
+  render() {
+    const {screenProps} = this.props
     return (
       <View style={styles.container}>
         <ScrollView
@@ -30,89 +136,16 @@ export default class HomeScreen extends Component {
                   : require('../assets/images/hpLogo.png')
               }
               style={styles.welcomeImage}
-            />
-          </View>
 
-          <View style={styles.getStartedContainer}>
+            />
             <DevelopmentModeNotice />
-
-
-            <View style={{ margin: 10 }}>
-              <Input
-                keyboardType='default'
-                value={screenProps.state.currentCode}
-                label="Código Producto     "
-                onChangeText={(text) => screenProps.stateReducer("ProductCode", text)}
-                fontWeight='Bold'
-                errorMessage={''}
-                placeholder={''}
-              >
-              </Input>
-            </View>
-
-            <View style={{ margin: 10 }}>
-              <Input
-                keyboardType='numeric'
-                value={screenProps.state.inventoryPrice}
-                label="Precio Inventario     "
-                onChangeText={(text) => screenProps.stateReducer( "inventoryPrice",text)}
-                fontWeight='Bold'
-                errorMessage={''}
-                placeholder={''}
-              >
-              </Input>
-            </View>
-
-            <View style={{ margin: 10 }}>
-              <Input
-                keyboardType='numeric'
-                value={screenProps.state.currentPrice}
-                label="Precio Consumidor  "
-                onChangeText={(text) => screenProps.stateReducer( "salePrice",text)}
-                fontWeight='Bold'
-                errorMessage={''}
-                placeholder={''}
-              >
-              </Input>
-            </View>
-
-
-
-            <View  style={{margin: 10 }}
-
-            >
-              <Text style={{ fontSize:16, textAlign: 'center', color: 'rgb(134,147,158)', fontWeight: 'bold'}}>¿Producto ofertado?</Text>
-              <View  style={{flexDirection:'row', flexWrap:'wrap'}}>
-              <CheckBox
-
-                center
-                title="Si"
-                checkedIcon='dot-circle-o'
-                uncheckedIcon='circle-o'
-                checked={screenProps.state.hasDiscount}
-                size={11}
-                onPress={() => screenProps.stateReducer("Disccount", true)}
-              />
-              <CheckBox
-                center
-                title="No"
-                checkedIcon='dot-circle-o'
-                uncheckedIcon='circle-o'
-                checked={!screenProps.state.hasDiscount}
-                size={11}
-                onPress={() => screenProps.stateReducer("Disccount", false)}
-              />
-              <View/>
-            </View>
-
-
-            </View>
-            <Button
-              onPressOut={() => screenProps.stateReducer("SumbitButton", "")}
-              buttonStylestyle='outline'
-              title="Enviar"
-            />
+            {
+              screenProps.state.hasEmployeeCode ?
+              this.renderForm() :
+              this.renderEmployeeForm()
+            }
           </View>
+
         </ScrollView>
       </View>
     );
