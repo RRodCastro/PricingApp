@@ -25,15 +25,15 @@ export default class App extends React.Component {
       hasDiscount: false,
       employeeCode: '',
       hasEmployeeCode: false,
-      hasCameraPermission: null
+      hasCameraPermission: null,
+      hasLocationPermission: null
     }
   }
 
   async componentWillMount(){
     const { statusCamera } = await Permissions.askAsync(Permissions.CAMERA);
-    console.log(statusCamera)
-    this.setState({ hasCameraPermission: statusCamera === 'granted' });
     const { statusLocation } = await Permissions.askAsync(Permissions.LOCATION);
+    this.setState({ hasCameraPermission: statusCamera === 'granted', hasLocationPermission: statusLocation === 'granted' });
   }
 
   _retrieveData = async () => {
@@ -42,7 +42,7 @@ export default class App extends React.Component {
       if (value !== null) {
         const employeeCode = value
         const hasEmployeeCode = true
-        this.setState({hasEmployeeCode})
+        this.setState({hasEmployeeCode:true, employeeCode: value})
       }
       else{
         console.log("none data..")
@@ -82,12 +82,12 @@ export default class App extends React.Component {
   _storeData = async () => {
     try {
       if (!!this.state.employeeCode){
-      Alert.alert("Guardado",)
-      await AsyncStorage.setItem('HPCode', '8099');
+      Alert.alert("Guardado")
+      await AsyncStorage.setItem('HPCode', this.state.employeeCode);
       const hasEmployeeCode = true
       this.setState({hasEmployeeCode})
     }
-    else{
+    else {
       Alert.alert("Error", "Debe ingresar código de empleado")
     }
     } catch (error) {
@@ -106,37 +106,69 @@ export default class App extends React.Component {
     }
   }
 
+  _storeApiData = async() => {
+   const data = JSON.stringify(
+     {
+       'employeeCode': this.state.employeeCode,
+       'sku': this.state.currentCode,
+       'invPrice': this.state.inventoryPrice,
+       'salePrice': this.state.salePrice
+    }
+    )
+    try{
+      const response = await fetch(
+        `http://172.16.18.33:5000/hello`,
+        {
+          method: 'POST',
+          credentials: 'same-origin',
+          body: data
+        }
+      );
+      const responseJson = await response.json()
+      console.log(responseJson)
+      return true
+
+    } catch(error){
+      console.log(error)
+    }
+
+  }
+
 
   stateReducer = (reducer, newState) => {
     switch(reducer){
       default:
-
       case "ProductCode":
         const currentCode = newState
         this.setState({currentCode})
         break;
       case "SumbitButton":
         alert("Sending...")
-        break
+        break;
       case "RemoveButton":
         this._clearStoredData()
+        break;
       case "inventoryPrice":
         const inventoryPrice = newState
         this.setState({inventoryPrice})
-        break
+        break;
       case "Disccount":
         const hasDiscount = newState
         this.setState({hasDiscount})
-        break
+        break;
       case "salePrice":
         const salePrice = newState
         this.setState({salePrice})
+        break;
       case "employeeCode":
         const employeeCode = newState
         this.setState({employeeCode})
         break;
       case "sendEmployeeCode":
         this._storeData()
+        break;
+      case "storeApiData":
+        this._storeApiData()
         break;
 
 

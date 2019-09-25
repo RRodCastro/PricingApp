@@ -116,6 +116,7 @@ export default class HomeScreen extends Component {
               color="white"
             />
           }
+          onPress={() => screenProps.stateReducer("storeApiData", "")}
           buttonStyle={{width: 60, marginLeft: 45}}
           width={10}
           size={5}
