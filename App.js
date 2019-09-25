@@ -8,7 +8,9 @@ import { Provider } from 'react-redux';
 import { createStore, applyMiddleware, compose } from 'redux'
 import appReducers from './reducers/reducers';
 import { AsyncStorage } from 'react-native';import AppNavigator from './navigation/AppNavigator';
-
+import { Camera } from 'expo-camera';
+import * as location from 'expo-location';
+import * as Permissions from 'expo-permissions';
 
 const store = createStore(appReducers);
 
@@ -22,8 +24,16 @@ export default class App extends React.Component {
       salePrice: '',
       hasDiscount: false,
       employeeCode: '',
-      hasEmployeeCode: false
+      hasEmployeeCode: false,
+      hasCameraPermission: null
     }
+  }
+
+  async componentWillMount(){
+    const { statusCamera } = await Permissions.askAsync(Permissions.CAMERA);
+    console.log(statusCamera)
+    this.setState({ hasCameraPermission: statusCamera === 'granted' });
+    const { statusLocation } = await Permissions.askAsync(Permissions.LOCATION);
   }
 
   _retrieveData = async () => {

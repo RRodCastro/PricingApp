@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 
 import { Button, Input, CheckBox } from 'react-native-elements'
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 export default class HomeScreen extends Component {
 
@@ -30,6 +31,7 @@ export default class HomeScreen extends Component {
             fontWeight='Bold'
             errorMessage={''}
             placeholder={''}
+            inputStyle={{color: 'white'}}
           >
           </Input>
         </View>
@@ -43,6 +45,7 @@ export default class HomeScreen extends Component {
             fontWeight='Bold'
             errorMessage={''}
             placeholder={''}
+            inputStyle={{color: 'white'}}
           >
           </Input>
         </View>
@@ -56,12 +59,13 @@ export default class HomeScreen extends Component {
             fontWeight='Bold'
             errorMessage={''}
             placeholder={''}
+            inputStyle={{color: 'white'}}
           >
           </Input>
         </View>
         <View style={{ margin: 10 }}
         >
-          <Text style={{ fontSize: 16, textAlign: 'center', color: 'rgb(134,147,158)', fontWeight: 'bold' }}>¿Producto ofertado?</Text>
+          <Text style={{ fontSize: 15, textAlign: 'center', color: 'rgb(134,147,158)', fontWeight: 'bold' }}>¿Producto ofertado?</Text>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
             <CheckBox
 
@@ -81,9 +85,44 @@ export default class HomeScreen extends Component {
               checked={!screenProps.state.hasDiscount}
               size={11}
               onPress={() => screenProps.stateReducer("Disccount", false)}
+              
             />
             <View />
           </View>
+        <View style={{margin: 10}}>
+          <Text style={{ fontSize: 15, textAlign: 'center', color: 'rgb(134,147,158)', fontWeight: 'bold' }}>Foto Producto</Text>
+          <Button
+          icon={
+            <Icon
+              name="camera"
+              size={15}
+              color="white"
+            />
+          }
+          buttonStyle={{width: 60, marginLeft: 45}}
+          
+          >
+
+          </Button>
+        </View>
+
+        <View style={{margin: 10}}>
+          <Text style={{ fontSize: 15, textAlign: 'center', color: 'rgb(134,147,158)', fontWeight: 'bold' }}>Foto Factura</Text>
+          <Button
+          icon={
+            <Icon
+              name="camera"
+              size={15}
+              color="white"
+            />
+          }
+          buttonStyle={{width: 60, marginLeft: 45}}
+          width={10}
+          size={5}
+          >
+
+          </Button>
+        </View>
 
 
         </View>
@@ -109,6 +148,7 @@ export default class HomeScreen extends Component {
             fontWeight='Bold'
             errorMessage={''}
             placeholder={''}
+            inputStyle={{color: 'white'}}
           >
           </Input>
         </View>
