@@ -1,25 +1,23 @@
 import React from 'react';
 import { Platform } from 'react-native';
-import { createStackNavigator, createBottomTabNavigator } from 'react-navigation';
+import { createStackNavigator} from 'react-navigation-stack';
+import { createBottomTabNavigator } from 'react-navigation-tabs';
 
 import TabBarIcon from '../components/TabBarIcon';
 import HomeScreen from '../screens/HomeScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 
-const config = Platform.select({
-  web: { headerMode: 'screen' },
-  default: {},
-});
 
-const HomeStack = createStackNavigator(
-  {
-    Home: HomeScreen,
-  },
-  config
-);
+
+const HomeStack = createStackNavigator({
+    Home: {
+      screen: HomeScreen
+    },
+});
 
 HomeStack.navigationOptions = {
   tabBarLabel: 'Precios',
+
   tabBarIcon: ({ focused }) => (
     <TabBarIcon
       focused={focused}
@@ -38,7 +36,6 @@ const SettingsStack = createStackNavigator(
   {
     Settings: SettingsScreen,
   },
-  config
 );
 
 SettingsStack.navigationOptions = {
@@ -52,8 +49,13 @@ SettingsStack.path = '';
 
 const tabNavigator = createBottomTabNavigator({
   HomeStack,
-  SettingsStack,
-});
+  SettingsStack
+}
+);
+
+tabNavigator.navigationOptions = {
+  header: null,
+};
 
 tabNavigator.path = '';
 
