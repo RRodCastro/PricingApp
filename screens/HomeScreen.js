@@ -1,15 +1,12 @@
-import * as WebBrowser from 'expo-web-browser';
 import React, { Component } from 'react'
+
 import {
   Image,
   Platform,
   ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
-  View,
-  TextInput,
-  Label
+  View
 } from 'react-native';
 
 import { Button, Input, CheckBox } from 'react-native-elements'
@@ -25,7 +22,7 @@ export default class HomeScreen extends Component {
         <View style={{ margin: 10 }}>
           <Input
             keyboardType='default'
-            value={screenProps.state.currentCode}
+            value={screenProps.state.productCode}
             label="Código Producto     "
             onChangeText={(text) => screenProps.stateReducer("ProductCode", text)}
             fontWeight='Bold'
@@ -53,7 +50,7 @@ export default class HomeScreen extends Component {
         <View style={{ margin: 10 }}>
           <Input
             keyboardType='numeric'
-            value={screenProps.state.currentPrice}
+            value={screenProps.state.salePrice}
             label="Precio Consumidor  "
             onChangeText={(text) => screenProps.stateReducer("salePrice", text)}
             fontWeight='Bold'
@@ -99,39 +96,28 @@ export default class HomeScreen extends Component {
               color="white"
             />
           }
+          onPressOut={() => screenProps.stateReducer("takePicture", true)}
           buttonStyle={{width: 60, marginLeft: 45}}
           
           >
 
           </Button>
         </View>
-
-        <View style={{margin: 10}}>
-          <Text style={{ fontSize: 15, textAlign: 'center', color: 'rgb(134,147,158)', fontWeight: 'bold' }}>Foto Factura</Text>
-          <Button
-          icon={
-            <Icon
-              name="camera"
-              size={15}
-              color="white"
-            />
-          }
-          onPress={() => screenProps.stateReducer("storeApiData", "")}
-          buttonStyle={{width: 60, marginLeft: 45}}
-          width={10}
-          size={5}
-          >
-
-          </Button>
         </View>
-
-
-        </View>
+        {
+          !screenProps.state.isSavingData ?
         <Button
-          onPressOut={() => screenProps.stateReducer("RemoveButton", "")}
+          onPressOut={() => screenProps.stateReducer("storeApiData", "")}
           buttonStylestyle='outline'
           title="Enviar"
+          buttonStyle={{width: 120}}
+        /> : 
+        <Button
+          buttonStylestyle='outline'
+          loading={true}
+          buttonStyle={{width: 120}}
         />
+        }
       </View>
     )
   }
@@ -161,6 +147,7 @@ export default class HomeScreen extends Component {
       </View>
     )
   }
+
   
   render() {
     const {screenProps} = this.props
@@ -179,9 +166,9 @@ export default class HomeScreen extends Component {
               style={styles.welcomeImage}
 
             />
-            <DevelopmentModeNotice />
             {
               screenProps.state.hasEmployeeCode ?
+              
               this.renderForm() :
               this.renderEmployeeForm()
             }
@@ -198,34 +185,6 @@ HomeScreen.navigationOptions = {
   header: null,
 };
 
-function DevelopmentModeNotice() {
-  if (__DEV__) {
-    const learnMoreButton = (
-      <Text onPress={handleLearnMorePress} style={styles.helpLinkText}>
-        Learn more
-      </Text>
-    );
-
-    return (
-      <Text style={styles.developmentModeText}>
-        Pricing App {learnMoreButton}
-      </Text>
-    );
-  } else {
-    return (
-      <Text style={styles.developmentModeText}>
-        Production mode
-      </Text>
-    );
-  }
-}
-
-function handleLearnMorePress() {
-  WebBrowser.openBrowserAsync(
-    'https://google.com'
-  );
-}
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -239,7 +198,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   contentContainer: {
-    paddingTop: 30,
+    paddingTop: 10,
   },
   welcomeContainer: {
     alignItems: 'center',
