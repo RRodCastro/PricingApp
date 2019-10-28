@@ -76,10 +76,7 @@ export default class App extends React.Component {
         require('./assets/images/hpLogo.png')
       ]),
       Font.loadAsync({
-        // This is the font that we are using for our tab bar
         ...Ionicons.FontAwesome,
-        // We include SpaceMono because we use it in HomeScreen.js. Feel free to
-        // remove this if you are not using it in your app
         'space-mono': require('./assets/fonts/SpaceMono-Regular.ttf'),
       }),
     ],
@@ -126,49 +123,54 @@ export default class App extends React.Component {
 
   _storeApiData = async () => {
     this.setState({ isSavingData: true })
-
+    let lat = ''
+    let long = ''
     try {
       const location = await Location.getCurrentPositionAsync({});
       if (!location){
         lat =''
         long = ''
       } else {
-        lat = location.latitude
-        long = location.longitude
+        lat = location.coords.latitude
+        long = location.coords.longitude
       }
-    } catch{
-      Alert.alert("Error", "No se pudo obtener ubicación...")
+    } catch(error) {
+      console.log("error ", error)
     }
 
-    const data = JSON.stringify(
-      {
-        'employeeCode': this.state.employeeCode,
-        'sku': this.state.productCode,
-        'invPrice': this.state.inventoryPrice,
-        'salePrice': this.state.salePrice,
-        'discount': this.state.hasDiscount ? 1 : 0,
-        'latlng': `${lat},${long}`
-      }
-    )
+    const newData = new FormData();
+    
+    capturedImage = this.state.photoId
+    newData.append('employeeCode', this.state.employeeCode)
+    newData.append('sku', this.state.productCode)
+    newData.append('invPrice', this.state.inventoryPrice)
+    newData.append('salePrice', this.state.salePrice)
+    newData.append('discount', this.state.hasDiscount ? 1 : 0)
+    newData.append('latlng', `${lat},${long}`)
+    if (this.state.photoId){
+      const today = new Date().getTime()
+      const photo = {
+        uri: this.state.photoId,
+        type: 'image/jpeg',
+        name: `${this.state.employeeCode}$${this.state.productCode}$${today}`,
+      };
+      newData.append('image', photo)
+    }
+    
     try {
       const response = await fetch(
-        ``,
+        'http://172.16.18.41:5000/storeData',
         {
           method: 'POST',
           credentials: 'same-origin',
-          body: data
+          body: newData
         }
       );
       this.setState({ isSavingData: false })
       Alert.alert("Enviado", "Datos enviados")
-      const responseJson = await response.json()
-      console.log(responseJson)
-      return true
-
     } catch (error) {
       Alert.alert("Error", "Por favor intente de nuevo")
       this.setState({ isSavingData: false })
-
     }
 
   }
@@ -220,7 +222,7 @@ export default class App extends React.Component {
 
   _takePicture = async () => {
     if (this.camera){
-      const image = await this.camera.takePictureAsync({skipProcessing: true});
+      const image = await this.camera.takePictureAsync({skipProcessing: false, quality: 0.5,});
       this.setState({photoId: image.uri, pictureTaked: true})
     }
   }
