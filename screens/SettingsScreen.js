@@ -1,16 +1,71 @@
 import React, { Component } from 'react';
-import { ExpoConfigView } from '@expo/samples';
+import Constants from 'expo-constants';
+
 import { SectionList, Image, StyleSheet, Text, View } from 'react-native';
 
-export default class SettingsScreen extends Component {
-  /**
-   * Go ahead and delete ExpoConfigView and replace it with your content;
-   * we just wanted to give you a quick view of your config.
-   */
+export default class SettingsScreen extends React.Component {
+  constructor(props){
+    super(props)
+    this.state = {
+      employeeCode: ''
+    }
+  }
+
+  _renderSectionHeader = ({ section }) => {
+    return <SectionHeader title={section.title} />;
+  };
+
+  _renderItem = ({ item }) => {
+    if (item.type === 'color') {
+      return <SectionContent>{item.value && <Color value={item.value} />}</SectionContent>;
+    } else {
+      return (
+        <SectionContent>
+          <Text style={styles.sectionContentText}>{item.value}</Text>
+        </SectionContent>
+      );
+    }
+  };
+
   render() {
+    const { manifest = {} } = Constants;
+    const sections = [
+      { data: [{ value: manifest.version }], title: 'version' },
+      { data: [{ value: manifest.orientation }], title: 'orientation' },
+      {
+        data: [{ value: manifest.primaryColor, type: 'color' }],
+        title: 'primaryColor',
+      },
+      {
+        data: [
+          {
+            value: manifest.splash && manifest.splash.backgroundColor,
+            type: 'color',
+          },
+        ],
+        title: 'splash.backgroundColor',
+      },
+      {
+        data: [
+          {
+            value: manifest.splash && manifest.splash.resizeMode,
+          },
+        ],
+        title: 'splash.resizeMode',
+      }
+    ];
+
     return (
-      <ExpoConfigView />
-    )
+      <SectionList
+        style={styles.container}
+        renderItem={this._renderItem}
+        renderSectionHeader={this._renderSectionHeader}
+        stickySectionHeadersEnabled={true}
+        keyExtractor={(item, index) => index}
+        ListHeaderComponent={ListHeader}
+        sections={sections}
+      />
+    );
   }
 }
 
@@ -18,6 +73,65 @@ SettingsScreen.navigationOptions = {
   title: 'app.json',
 };
 
+const ListHeader = () => {
+  const { manifest } = Constants;
+
+  return (
+    <View style={styles.titleContainer}>
+      <View style={styles.titleIconContainer}>
+        <AppIconPreview iconUrl={manifest.iconUrl} />
+      </View>
+
+      <View style={styles.titleTextContainer}>
+        <Text style={styles.nameText} numberOfLines={1}>
+          {manifest.name}
+        </Text>
+
+        <Text style={styles.slugText} numberOfLines={1}>
+          {manifest.slug}
+        </Text>
+
+        <Text style={styles.descriptionText}>{manifest.description}</Text>
+      </View>
+    </View>
+  );
+};
+
+const AppIconPreview = ({ iconUrl }) => {
+  if (!iconUrl) {
+    iconUrl = 'https://s3.amazonaws.com/exp-brand-assets/ExponentEmptyManifest_192.png';
+  }
+
+  return <Image source={{ uri: iconUrl }} style={{ width: 64, height: 64 }} resizeMode="cover" />;
+};
+
+const Color = ({ value }) => {
+  if (!value) {
+    return <View />;
+  } else {
+    return (
+      <View style={styles.colorContainer}>
+        <View style={[styles.colorPreview, { backgroundColor: value }]} />
+        <View style={styles.colorTextContainer}>
+          <Text style={styles.sectionContentText}>{value}</Text>
+        </View>
+      </View>
+    );
+  }
+};
+
+
+const SectionHeader = ({ title }) => {
+  return (
+    <View style={styles.sectionHeaderContainer}>
+      <Text style={styles.sectionHeaderText}>{title}</Text>
+    </View>
+  );
+};
+
+const SectionContent = props => {
+  return <View style={styles.sectionContentContainer}>{props.children}</View>;
+};
 
 const styles = StyleSheet.create({
   container: {
