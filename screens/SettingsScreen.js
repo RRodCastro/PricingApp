@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Constants from 'expo-constants';
 
-import { SectionList, Image, StyleSheet, Text, View } from 'react-native';
+import { SectionList, Image, StyleSheet, Text, View, AsyncStorage } from 'react-native';
 
 export default class SettingsScreen extends React.Component {
   constructor(props){
@@ -9,6 +9,11 @@ export default class SettingsScreen extends React.Component {
     this.state = {
       employeeCode: ''
     }
+  }
+
+  async componentDidMount() {
+    const value = await AsyncStorage.getItem('HPCode');
+    this.setState({ employeeCode: value })
   }
 
   _renderSectionHeader = ({ section }) => {
@@ -30,6 +35,8 @@ export default class SettingsScreen extends React.Component {
   render() {
     const { manifest = {} } = Constants;
     const sections = [
+      
+      { data: [{ value: this.state.employeeCode }], title: 'Código empleado' },
       { data: [{ value: manifest.version }], title: 'version' },
       { data: [{ value: manifest.orientation }], title: 'orientation' },
       {
@@ -70,7 +77,7 @@ export default class SettingsScreen extends React.Component {
 }
 
 SettingsScreen.navigationOptions = {
-  title: 'app.json',
+  title: 'Pricing HP',
 };
 
 const ListHeader = () => {
@@ -79,7 +86,7 @@ const ListHeader = () => {
   return (
     <View style={styles.titleContainer}>
       <View style={styles.titleIconContainer}>
-        <AppIconPreview iconUrl={manifest.iconUrl} />
+        <AppIconPreview />
       </View>
 
       <View style={styles.titleTextContainer}>
@@ -97,11 +104,8 @@ const ListHeader = () => {
   );
 };
 
-const AppIconPreview = ({ iconUrl }) => {
-  if (!iconUrl) {
-    iconUrl = 'https://s3.amazonaws.com/exp-brand-assets/ExponentEmptyManifest_192.png';
-  }
-
+const AppIconPreview = () => {
+  const iconUrl = '../assets/images/hpLogo.png';
   return <Image source={{ uri: iconUrl }} style={{ width: 64, height: 64 }} resizeMode="cover" />;
 };
 
