@@ -6,21 +6,21 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  View
+  View,
+  Keyboard
 } from 'react-native';
 
 import Autocomplete from './Autocomplete';
 
 import { Button, Input, CheckBox } from 'react-native-elements'
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { films } from '../assets/data/products'
 
 export default class HomeScreen extends Component {
   
-  constructor(props){
+  constructor(props) {
     super(props);
     this.state = {
-      films: films,
+      films: props.screenProps.films,
       query: '',
       selectedItem: false
     }
@@ -30,7 +30,7 @@ export default class HomeScreen extends Component {
     return (
       <View>
         {film.map((item, index) => (
-          <Text key={index} onPress={() => {this.setState({query: `${item.key}, ${item.title}`, selectedItem: true }) }} style={styles.titleText}> {item.key}, {item.title} </Text>
+          <Text key={index} onPress={() => {this.props.screenProps.stateReducer("ProductCode", `${item.key}, ${item.title}`); Keyboard.dismiss(); this.setState({selectedItem: true }) }} style={styles.titleText}> {item.key}, {item.title} </Text>
         ))}
       </View>
     );
@@ -46,20 +46,20 @@ export default class HomeScreen extends Component {
   }
 
   renderSearch () {
-    const { query } = this.state;
-    const films = this.findFilm(query);
+    const { productCode } = this.props.screenProps.state
+    const films = this.findFilm(productCode);
     const comp = (a, b) => a === b;
     
     return (
     <View style={styles.container2}>
       <Autocomplete
-        hideResults={query.length == 0}
+        hideResults={productCode.length == 0}
         autoCapitalize="none"
         autoCorrect={false}
         containerStyle={styles.autocompleteContainer}
-        data={films.length === 1 && comp(query, films[0].key) ? [] : films}
-        defaultValue={query}
-        onChangeText={text => { this.setState({ query: text, selectedItem: false })}}
+        data={films.length === 1 && comp(productCode, films[0].key) ? [] : films}
+        defaultValue={productCode}
+        onChangeText={text => { this.props.screenProps.stateReducer("ProductCode", text)  ; this.setState({ query: text, selectedItem: false })}}
         placeholder="Ingresar producto"
         renderItem={({ title, key }) => { (
           <Text>
@@ -134,7 +134,6 @@ export default class HomeScreen extends Component {
           <Text style={{ fontSize: 15, textAlign: 'center', color: 'rgb(134,147,158)', fontWeight: 'bold' }}>¿Producto ofertado?</Text>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
             <CheckBox
-
               center
               title="Si"
               checkedIcon='dot-circle-o'
@@ -157,6 +156,7 @@ export default class HomeScreen extends Component {
           </View>
         <View style={{margin: 10}}>
           <Text style={{ fontSize: 15, textAlign: 'center', color: 'rgb(134,147,158)', fontWeight: 'bold' }}>Foto Producto</Text>
+          <View style={{flexDirection: "row"}}>
           <Button
           icon={
             <Icon
@@ -166,11 +166,17 @@ export default class HomeScreen extends Component {
             />
           }
           onPressOut={() => screenProps.stateReducer("takePicture", true)}
-          buttonStyle={{width: 60, marginLeft: 45}}
-          
+          buttonStyle={{width: 60, marginLeft: 45}}          
           >
-
           </Button>
+          {Boolean(screenProps.state.photoId) && 
+          (<Icon
+            style={{marginLeft: 5, marginTop: 5}}
+            name="check"
+            size={18}
+            color="green"
+          />)}
+          </View>
         </View>
         </View>
         {
@@ -188,7 +194,6 @@ export default class HomeScreen extends Component {
         />
         }
       </View>
-
       </View>
     )
   }
@@ -226,7 +231,9 @@ export default class HomeScreen extends Component {
       <View style={styles.container}>
         <ScrollView
           style={styles.container}
-          contentContainerStyle={styles.contentContainer}>
+          contentContainerStyle={styles.contentContainer}
+          keyboardShouldPersistTaps="handled"
+          >
           <View style={styles.welcomeContainer}>
             <Image
               source={
@@ -239,7 +246,7 @@ export default class HomeScreen extends Component {
             />
             {
               screenProps.state.hasEmployeeCode ?
-              
+
               this.renderForm() :
               this.renderEmployeeForm()
             }
@@ -248,7 +255,7 @@ export default class HomeScreen extends Component {
         </ScrollView>
       </View>
     );
-  }
+}
 
 }
 
@@ -337,7 +344,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#2e78b7',
   },
-
+  
   container2: {
     backgroundColor: 'transparent',
     flex: 0,
@@ -358,9 +365,7 @@ const styles = StyleSheet.create({
     margin: 2
   },
   descriptionContainer: {
-    // `backgroundColor` needs to be set otherwise the
-    // autocomplete input will disappear on text input.
-    backgroundColor: '#F5FCFF',
+    backgroundColor: '#8C8984',
     marginTop: 25
   },
   infoText: {
@@ -372,8 +377,18 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     marginTop: 10,
     textAlign: 'center',
+    color: 'white'
   },
   openingText: {
     textAlign: 'center'
+  },
+  activityContainer: {
+    flex: 1,
+    justifyContent: 'center'
+  },
+  activityHorizontal: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    padding: 10
   }
 });
