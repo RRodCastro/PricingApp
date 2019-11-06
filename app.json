@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "PricingApp",
-    "slug": "PricingApp",
+    "name": "Pricing",
+    "slug": "Pricing",
     "privacy": "public",
     "sdkVersion": "34.0.0",
     "platforms": [
@@ -13,9 +13,8 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "splash": {
-      "image": "./assets/images/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "image": "./assets/images/hpLogo.png",
+      "backgroundColor": "#40515b"
     },
     "updates": {
       "fallbackToCacheTimeout": 0
@@ -25,6 +24,9 @@
     ],
     "ios": {
       "supportsTablet": true
+    },
+    "android": {
+      "package": "com.rc.hp"
     }
   }
 }
