@@ -14,6 +14,7 @@ import * as Location from 'expo-location';
 import * as Permissions from 'expo-permissions';
 import * as FileSystem from 'expo-file-system';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { PRODUCTS } from './assets/data/products'
 
 const store = createStore(appReducers);
 const { width: winWidth, height: winHeight } = Dimensions.get('window');
@@ -23,9 +24,9 @@ export default class App extends React.Component {
     super(props)
     this.state = {
       isLoadingComplete: false,
-      productCode: 'HP4235-65',
-      inventoryPrice: '22.30',
-      salePrice: '25.30',
+      productCode: '',
+      inventoryPrice: '',
+      salePrice: '',
       hasDiscount: false,
       employeeCode: '',
       hasEmployeeCode: false,
@@ -35,7 +36,9 @@ export default class App extends React.Component {
       cameraViewOpen: false,
       photo :'',
       photoId: '',
-      pictureTaked: false
+      pictureTaked: false,
+      hasStoredCatalog: false,
+      storedCatalog: []
     }
   }
 
@@ -54,9 +57,10 @@ export default class App extends React.Component {
     });
   }
 
-  _retrieveData = async () => {
+ _retrieveData = async () => {
     try {
       const value = await AsyncStorage.getItem('HPCode');
+      console.log("value ... ")
       if (value !== null) {
         const employeeCode = value
         const hasEmployeeCode = true
@@ -68,8 +72,83 @@ export default class App extends React.Component {
     } catch (error) {
       // Error retrieving data
     }
+    try {
+      const today = (new Date()).toISOString().split('T')[0]
+      let lastCatalogFetch = await AsyncStorage.getItem('LastCatalogFetch');
+      console.log("last catalog fetch " ,lastCatalogFetch)
+      console.log("today ", today)
+      try {
+        const testCatalogFetch = new Date(lastCatalogFetch)
+
+        if ( new Date(testCatalogFetch) > new Date(today) ){
+          lastCatalogFetch = null
+        }
+      } catch(error){
+        lastCatalogFetch = today
+      }
+      if (lastCatalogFetch !== null ) {
+        if (lastCatalogFetch != today && (today.split("-")[2] == 15 || today.split("-")[2] == 30 )  ) {
+          const response = await fetch(
+            'http://172.16.18.41:5000/getCatalog',
+            {
+              method: 'GET',
+              credentials: 'same-origin'
+            }
+          ).then(response => response.json())
+
+          if (response && 'catalog' in response){
+            try {
+              await AsyncStorage.setItem("LastCatalogFetch", today)
+              await AsyncStorage.setItem("StoredCatalog", JSON.stringify(response.catalog))
+              this.setState({storedCatalog: response.catalog})
+            }
+            catch(error){
+              console.log(error)
+            }
+          }
+        } else {
+          try{
+            const storedCatalog = await AsyncStorage.getItem('StoredCatalog');
+            if (storedCatalog){
+              this.setState({storedCatalog: JSON.parse(storedCatalog) })
+            }
+          } catch(error) {
+            console.log(error)
+          }
+        }
+      } else {
+    
+        // IF non data, fetch catalog
+        const response = await fetch(
+          'http://172.16.18.41:5000/getCatalog',
+          {
+            method: 'GET',
+            credentials: 'same-origin'
+          }
+        ).then(response => response.json())
+        console.log("response in else ")
+        console.log(response)
+        if (response && 'catalog' in response){
+          try {
+            await AsyncStorage.setItem("LastCatalogFetch", today)
+            await AsyncStorage.setItem("StoredCatalog", JSON.stringify(response.catalog))
+            this.setState({storedCatalog: response.catalog})
+          }
+          catch(error){
+            console.log(error)
+          }
+        }
+        else {
+          console.log("no data because catalog doesnt exists...")
+        }
+      }
+    } catch(error) {
+      console.log("error")
+    }
+
   };
  
+
   loadResourcesAsync = async () => {
     return Promise.all([
       Asset.loadAsync([
@@ -79,8 +158,8 @@ export default class App extends React.Component {
         ...Ionicons.FontAwesome,
         'space-mono': require('./assets/fonts/SpaceMono-Regular.ttf'),
       }),
-    ],
       this._retrieveData()
+    ] 
     );
   }
 
@@ -122,6 +201,11 @@ export default class App extends React.Component {
   }
 
   _storeApiData = async () => {
+    const findProduct = (PRODUCTS.concat(this.state.storedCatalog)).find((ele) => ele.key == this.state.productCode.split(",")[0])
+    if (!findProduct) {
+      alert("Debe seleccionar un producto del listado")
+    } else {
+    const productCode = this.state.productCode.split(",")[0]
     this.setState({ isSavingData: true })
     let lat = ''
     let long = ''
@@ -142,7 +226,7 @@ export default class App extends React.Component {
     
     capturedImage = this.state.photoId
     newData.append('employeeCode', this.state.employeeCode)
-    newData.append('sku', this.state.productCode)
+    newData.append('sku', productCode)
     newData.append('invPrice', this.state.inventoryPrice)
     newData.append('salePrice', this.state.salePrice)
     newData.append('discount', this.state.hasDiscount ? 1 : 0)
@@ -152,7 +236,7 @@ export default class App extends React.Component {
       const photo = {
         uri: this.state.photoId,
         type: 'image/jpeg',
-        name: `${this.state.employeeCode}$${this.state.productCode}$${today}`,
+        name: `${this.state.employeeCode}$${productCode}$${today}`,
       };
       newData.append('image', photo)
     }
@@ -166,16 +250,14 @@ export default class App extends React.Component {
           body: newData
         }
       );
-      this.setState({ isSavingData: false })
+      this.setState({ isSavingData: false, salePrice: '', inventoryPrice: '', photoId: '', pictureTaked: false })
       Alert.alert("Enviado", "Datos enviados")
     } catch (error) {
       Alert.alert("Error", "Por favor intente de nuevo")
       this.setState({ isSavingData: false })
     }
-
   }
-
-
+  }
 
   stateReducer = (reducer, newState) => {
     switch (reducer) {
@@ -215,14 +297,12 @@ export default class App extends React.Component {
       case "takePicture":
         this.setState({ cameraViewOpen: newState })
         break;
-
-
     }
   }
 
   _takePicture = async () => {
     if (this.camera){
-      const image = await this.camera.takePictureAsync({skipProcessing: false, quality: 0.5,});
+      const image = await this.camera.takePictureAsync({skipProcessing: false, quality: 0.5 });
       this.setState({photoId: image.uri, pictureTaked: true})
     }
   }
@@ -312,6 +392,7 @@ export default class App extends React.Component {
             screenProps={{
               state: this.state,
               stateReducer: this.stateReducer,
+              films: PRODUCTS.concat(this.state.storedCatalog) 
             }}
           />
         </Provider>
@@ -348,4 +429,13 @@ captureBtnActive: {
   width: 80,
   height: 80,
 },
+activityContainer: {
+  flex: 1,
+  justifyContent: 'center'
+},
+activityHorizontal: {
+  flexDirection: 'row',
+  justifyContent: 'space-around',
+  padding: 10
+}
 });
