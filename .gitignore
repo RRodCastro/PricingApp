@@ -11,3 +11,5 @@ web-build/
 web-report/
 __tests__
 package-lock.json
+assets/images/icon.png
+assets/data/products.js
