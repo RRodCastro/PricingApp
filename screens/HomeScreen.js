@@ -106,7 +106,7 @@ export default class HomeScreen extends Component {
           <Input
             keyboardType='numeric'
             value={screenProps.state.inventoryPrice}
-            label="Precio Inventario     "
+            label="Precio Inventario (sin iva)"
             onChangeText={(text) => screenProps.stateReducer("inventoryPrice", text)}
             fontWeight='Bold'
             errorMessage={''}
@@ -120,7 +120,7 @@ export default class HomeScreen extends Component {
           <Input
             keyboardType='numeric'
             value={screenProps.state.salePrice}
-            label="Precio Consumidor  "
+            label="Precio Consumidor (sin iva)"
             onChangeText={(text) => screenProps.stateReducer("salePrice", text)}
             fontWeight='Bold'
             errorMessage={''}
