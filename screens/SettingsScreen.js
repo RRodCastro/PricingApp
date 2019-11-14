@@ -1,20 +1,39 @@
 import React, { Component } from 'react';
 import Constants from 'expo-constants';
 
-import { SectionList, Image, StyleSheet, Text, View, AsyncStorage } from 'react-native';
+import { SectionList, Image, StyleSheet, Text, View, AsyncStorage, TextInput, Button, Keyboard, Alert, ToastAndroid } from 'react-native';
+
+const Toast = (props) => {
+  if (props.visible) {
+    ToastAndroid.showWithGravityAndOffset(
+      props.message,
+      ToastAndroid.LONG,
+      ToastAndroid.TOP,
+      25,
+      50,
+    );
+    return null;
+  }
+  return null;
+};
 
 export default class SettingsScreen extends React.Component {
+  
   constructor(props){
     super(props)
     this.state = {
-      employeeCode: ''
+      employeeCode: '',
+      editEmployee: true,
+      showToast: false
     }
   }
 
-  async componentDidMount() {
+  async componentWillMount() {
     const value = await AsyncStorage.getItem('HPCode');
     this.setState({ employeeCode: value })
   }
+
+  
 
   _renderSectionHeader = ({ section }) => {
     return <SectionHeader title={section.title} />;
@@ -32,47 +51,76 @@ export default class SettingsScreen extends React.Component {
     }
   };
 
+  _saveEmployeeCode =  async () => {
+    await AsyncStorage.setItem('HPCode', this.state.employeeCode);
+    this.setState({showToast: true})
+    Keyboard.dismiss();
+    setTimeout(() => {this.setState({showToast: false})},1000)
+  }
+
+  renderCodText = () => (
+    <View >
+    <TextInput
+      style={styles.employeeContentText}
+      value={this.state.employeeCode}
+      onChangeText={text => this.setState({employeeCode: text})}
+    />
+    <Button
+      onPress={() => { this._saveEmployeeCode()}
+      }
+      buttonStylestyle='outline'
+      title={"Actualizar número de ruta"}
+    />
+    </View>
+  );
+
+  ListHeader = () => {
+    const { manifest } = Constants;
+  
+    return (
+      <View style={styles.titleContainer}>
+        <View style={styles.titleIconContainer}>
+          <AppIconPreview />
+        </View>
+  
+        <View style={styles.titleTextContainer}>
+          <Text style={styles.nameText} numberOfLines={1}>
+            {manifest.name}
+          </Text>
+  
+          <Text style={styles.slugText} numberOfLines={1}>
+            {manifest.slug}
+          </Text>
+  
+          <Text style={styles.descriptionText}>{manifest.description}</Text>
+        </View>
+        <Toast visible={this.state.showToast} message="Número de ruta actualizado" />
+      </View>
+    );
+  };
+  
+
   render() {
     const { manifest = {} } = Constants;
     const sections = [
       
-      { data: [{ value: this.state.employeeCode }], title: 'Código empleado' },
-      { data: [{ value: manifest.version }], title: 'version' },
-      { data: [{ value: manifest.orientation }], title: 'orientation' },
-      {
-        data: [{ value: manifest.primaryColor, type: 'color' }],
-        title: 'primaryColor',
-      },
-      {
-        data: [
-          {
-            value: manifest.splash && manifest.splash.backgroundColor,
-            type: 'color',
-          },
-        ],
-        title: 'splash.backgroundColor',
-      },
-      {
-        data: [
-          {
-            value: manifest.splash && manifest.splash.resizeMode,
-          },
-        ],
-        title: 'splash.resizeMode',
-      }
+      { data: [{ value: this.state.employeeCode }], title: 'Número de ruta', renderItem: this.renderCodText } ,
+      { data: [{ value: manifest.version }], title: 'version' }
+      
     ];
 
-    return (
+    return (        
       <SectionList
         style={styles.container}
         renderItem={this._renderItem}
         renderSectionHeader={this._renderSectionHeader}
         stickySectionHeadersEnabled={true}
         keyExtractor={(item, index) => index}
-        ListHeaderComponent={ListHeader}
+        ListHeaderComponent={this.ListHeader}
         sections={sections}
+        keyboardShouldPersistTaps={"always"}
       />
-    );
+   );
   }
 }
 
@@ -80,33 +128,10 @@ SettingsScreen.navigationOptions = {
   title: 'Pricing HP',
 };
 
-const ListHeader = () => {
-  const { manifest } = Constants;
-
-  return (
-    <View style={styles.titleContainer}>
-      <View style={styles.titleIconContainer}>
-        <AppIconPreview />
-      </View>
-
-      <View style={styles.titleTextContainer}>
-        <Text style={styles.nameText} numberOfLines={1}>
-          {manifest.name}
-        </Text>
-
-        <Text style={styles.slugText} numberOfLines={1}>
-          {manifest.slug}
-        </Text>
-
-        <Text style={styles.descriptionText}>{manifest.description}</Text>
-      </View>
-    </View>
-  );
-};
 
 const AppIconPreview = () => {
-  const iconUrl = '../assets/images/hpLogo.png';
-  return <Image source={{ uri: iconUrl }} style={{ width: 64, height: 64 }} resizeMode="cover" />;
+  const iconUrl = '../assets/images/icon.png';
+  return <Image source={require('../assets/images/hpLogo.png')} style={{ width: 100, height: 62 }} resizeMode="contain" />;
 };
 
 const Color = ({ value }) => {
@@ -170,6 +195,13 @@ const styles = StyleSheet.create({
   sectionContentText: {
     color: '#808080',
     fontSize: 14,
+  },
+  employeeContentText: {
+    color: '#808080',
+    fontSize: 14,
+    paddingTop: 8,
+    paddingBottom: 12,
+    paddingHorizontal: 15
   },
   nameText: {
     fontWeight: '600',
