@@ -1,7 +1,7 @@
 import { AppLoading } from 'expo';
 import { Asset } from 'expo-asset';
 import React from 'react';
-import { StyleSheet, View, Alert, TouchableWithoutFeedback, Dimensions, Image  } from 'react-native';
+import { StyleSheet, View, Alert, TouchableWithoutFeedback, Dimensions, Image } from 'react-native';
 import { Provider } from 'react-redux';
 import { createStore } from 'redux'
 import appReducers from './reducers/reducers';
@@ -23,20 +23,20 @@ export default class App extends React.Component {
     super(props)
     this.state = {
       isLoadingComplete: false,
-      productCode: '00000',
-      clientCode: '000000',
-      inventoryPrice: '0',
-      salePrice: '0',
-      hpSalePrice: '0',
+      productCode: '',
+      clientCode: '',
+      inventoryPrice: '',
+      salePrice: '',
+      hpSalePrice: '',
       hasDiscount: false,
-      employeeCode: 'Testing',
+      employeeCode: '',
       hasEmployeeCode: false,
       hasCameraPermission: null,
       hasLocationPermission: null,
       isSavingData: false,
       cameraViewOpen: false,
       invoiceCameraViewOpen: false,
-      photo :'',
+      photo: '',
       photoId: '',
       pictureTaked: false,
       hasStoredCatalog: false,
@@ -70,53 +70,66 @@ export default class App extends React.Component {
 
   _getLocationAsync = async () => {
     try {
-      const location = await Location.getCurrentPositionAsync({accuracy: 4});
-      if (!location){
-        lat =''
+      const location = await Location.getCurrentPositionAsync({ accuracy: 4 });
+      if (!location) {
+        lat = ''
         long = ''
       } else {
         lat = location.coords.latitude
         long = location.coords.longitude
-        this.setState({lat, long})
+        this.setState({ lat, long })
       }
-    } catch(error) {
+    } catch (error) {
       console.log("error ", error)
     }
   }
 
   _retriveCatalog = async () => {
 
-    this.setState({fetchingCatalog: true})
-    const catalog = await fetch(
-      'http://192.168.137.1:5000/getCatalog',
-      {
-        method: 'GET',
-        credentials: 'same-origin'
-      }
-    ).then(response => response.json())
-
-
-    const clients = await fetch(
-      'http://192.168.137.1:5000/getClients',
-      {
-        method: 'GET',
-        credentials: 'same-origin'
-      }
-    ).then(response => response.json())
-
     const today = (new Date()).toISOString().split('T')[0]
-    
-    await AsyncStorage.setItem("LastClientFetch", today)
-    
-    this.setState({fetchingCatalog: false, storedCatalog: catalog.catalog, storedClients: clients.catalog})
 
-    await AsyncStorage.setItem("StoredCatalog", JSON.stringify(catalog.catalog))
+    const lastClientFetch = await AsyncStorage.getItem('LastClientFetch');
 
-    await AsyncStorage.setItem("StoredClients", JSON.stringify(clients.catalog))
+    if (lastClientFetch != today) {
+
+
+      this.setState({ fetchingCatalog: true })
+      const catalog = await fetch(
+        'http://192.168.137.1:5000/getCatalog',
+        {
+          method: 'GET',
+          credentials: 'same-origin'
+        }
+      ).then(response => response.json())
+
+
+      const clients = await fetch(
+        'http://192.168.137.1:5000/getClients',
+        {
+          method: 'GET',
+          credentials: 'same-origin'
+        }
+      ).then(response => response.json())
+
+
+
+      await AsyncStorage.setItem("LastClientFetch", today)
+
+      this.setState({ fetchingCatalog: false, storedCatalog: catalog.catalog, storedClients: clients.catalog })
+
+      await AsyncStorage.setItem("StoredCatalog", JSON.stringify(catalog.catalog))
+
+      await AsyncStorage.setItem("StoredClients", JSON.stringify(clients.catalog))
+    }
+    else {
+      Alert.alert("", "Catalogo ya actualizado")
+
+    }
 
   }
 
- _retrieveData = async () => {
+  _retrieveData = async () => {
+    // Get Employee Code (if exists)
     try {
       const value = await AsyncStorage.getItem('HPCode');
       if (value !== null) {
@@ -130,20 +143,21 @@ export default class App extends React.Component {
     } catch (error) {
       // Error retrieving data
     }
+
     try {
       const today = (new Date()).toISOString().split('T')[0]
-      let lastCatalogFetch = await AsyncStorage.getItem('LastCatalogFetch');  
+      let lastCatalogFetch = await AsyncStorage.getItem('LastCatalogFetch');
       try {
         const testCatalogFetch = new Date(lastCatalogFetch)
 
-        if ( (new Date(testCatalogFetch)) > (new Date(today)) ){
+        if ((new Date(testCatalogFetch)) > (new Date(today))) {
           lastCatalogFetch = null
         }
-      } catch(error){
+      } catch (error) {
         lastCatalogFetch = today
       }
-      if (lastCatalogFetch !== null ) {
-        if (lastCatalogFetch != today && (  (  new Date(today) - new Date(lastCatalogFetch)  ) / (1000*60*60*24) ) >= 15 )  {
+      if (lastCatalogFetch !== null) {
+        if (lastCatalogFetch != today && ((new Date(today) - new Date(lastCatalogFetch)) / (1000 * 60 * 60 * 24)) >= 15) {
           const response = await fetch(
             'http://192.168.137.1:5000/getCatalog',
             {
@@ -151,29 +165,29 @@ export default class App extends React.Component {
               credentials: 'same-origin'
             }
           ).then(response => response.json())
-          
-          if (response && 'catalog' in response){
+
+          if (response && 'catalog' in response) {
             try {
               await AsyncStorage.setItem("LastCatalogFetch", today)
               await AsyncStorage.setItem("StoredCatalog", JSON.stringify(response.catalog))
-              this.setState({storedCatalog: response.catalog})
+              this.setState({ storedCatalog: response.catalog })
             }
-            catch(error){
+            catch (error) {
               console.log("error " + error)
             }
           }
         } else {
-          try{
+          try {
             const storedCatalog = await AsyncStorage.getItem('StoredCatalog');
-            if (storedCatalog){
-              this.setState({storedCatalog: JSON.parse(storedCatalog) })
+            if (storedCatalog) {
+              this.setState({ storedCatalog: JSON.parse(storedCatalog) })
             }
-          } catch(error) {
+          } catch (error) {
             console.log(error)
           }
         }
       } else {
-    
+
         // IF non data, fetch catalog
         const response = await fetch(
           'http://192.168.137.1:5000/getCatalog',
@@ -182,13 +196,13 @@ export default class App extends React.Component {
             credentials: 'same-origin'
           }
         ).then(response => response.json())
-        if (response && 'catalog' in response){
+        if (response && 'catalog' in response) {
           try {
             await AsyncStorage.setItem("LastCatalogFetch", today)
             await AsyncStorage.setItem("StoredCatalog", JSON.stringify(response.catalog))
-            this.setState({storedCatalog: response.catalog})
+            this.setState({ storedCatalog: response.catalog })
           }
-          catch(error){
+          catch (error) {
             console.log(error)
           }
         }
@@ -196,24 +210,24 @@ export default class App extends React.Component {
           console.log("no data because catalog doesnt exists...")
         }
       }
-    } catch(error) {
+    } catch (error) {
       console.log("error", error)
     }
 
     try {
       const today = (new Date()).toISOString().split('T')[0]
-      let lastClientFetch = await AsyncStorage.getItem('LastClientFetch');  
+      let lastClientFetch = await AsyncStorage.getItem('LastClientFetch');
       try {
         const testCatalogFetch = new Date(lastClientFetch)
 
-        if ( (new Date(testCatalogFetch)) > (new Date(today)) ){
+        if ((new Date(testCatalogFetch)) > (new Date(today))) {
           lastClientFetch = null
         }
-      } catch(error){
+      } catch (error) {
         lastClientFetch = today
       }
-      if (lastClientFetch !== null ) {
-        if (lastClientFetch != today && (  (  new Date(today) - new Date(lastClientFetch)  ) / (1000*60*60*24) ) >= 15 )  {
+      if (lastClientFetch !== null) {
+        if (lastClientFetch != today && ((new Date(today) - new Date(lastClientFetch)) / (1000 * 60 * 60 * 24)) >= 15) {
           const response = await fetch(
             'http://192.168.137.1:5000/getClients',
             {
@@ -222,28 +236,28 @@ export default class App extends React.Component {
             }
           ).then(response => response.json())
 
-          if (response && 'catalog' in response){
+          if (response && 'catalog' in response) {
             try {
               await AsyncStorage.setItem("LastClientFetch", today)
               await AsyncStorage.setItem("StoredClients", JSON.stringify(response.catalog))
-              this.setState({storedClients: response.catalog})
+              this.setState({ storedClients: response.catalog })
             }
-            catch(error){
+            catch (error) {
               console.log("error " + error)
             }
           }
         } else {
-          try{
+          try {
             const storedClients = await AsyncStorage.getItem('StoredClients');
-            if (storedClients){
-              this.setState({storedClients: JSON.parse(storedClients) })
+            if (storedClients) {
+              this.setState({ storedClients: JSON.parse(storedClients) })
             }
-          } catch(error) {
+          } catch (error) {
             console.log(error)
           }
         }
       } else {
-    
+
         // IF non data, fetch catalog
         const response = await fetch(
           'http://192.168.137.1:5000/getClients',
@@ -252,13 +266,13 @@ export default class App extends React.Component {
             credentials: 'same-origin'
           }
         ).then(response => response.json())
-        if (response && 'catalog' in response){
+        if (response && 'catalog' in response) {
           try {
             await AsyncStorage.setItem("LastClientFetch", today)
             await AsyncStorage.setItem("StoredClients", JSON.stringify(response.catalog))
-            this.setState({storedClients: response.catalog})
+            this.setState({ storedClients: response.catalog })
           }
-          catch(error){
+          catch (error) {
             console.log(error)
           }
         }
@@ -266,12 +280,12 @@ export default class App extends React.Component {
           console.log("no data because clients doesnt exists...")
         }
       }
-    } catch(error) {
+    } catch (error) {
       console.log("error", error)
     }
 
   };
- 
+
 
   loadResourcesAsync = async () => {
     return Promise.all([
@@ -280,7 +294,7 @@ export default class App extends React.Component {
       ]),
       this._retrieveData(),
       this._getLocationAsync()
-    ] 
+    ]
     );
   }
 
@@ -322,83 +336,83 @@ export default class App extends React.Component {
   _storeApiData = async () => {
 
     const findProduct = (PRODUCTS.concat(this.state.storedCatalog)).find((ele) => ele.key == this.state.productCode.split(",")[0])
-    const findClient = (CLIENTS.concat(this.state.storedClients)).find((ele) => ele.key == this.state.clientCode.split(",")[0] )
+    const findClient = (CLIENTS.concat(this.state.storedClients)).find((ele) => ele.key == this.state.clientCode.split(",")[0])
     if (!findProduct) {
       Alert.alert("Error", "Debe seleccionar un producto del listado")
-    } else if( !findClient){
+    } else if (!findClient) {
       Alert.alert("Error", "Debe seleccionar un cliente del listado")
-    } else if ( !this.state.inventoryPrice) {
-      Alert.alert("Error", "Costo ferretero debe tener información" )
-    } else if(!this.state.salePrice) {
-      Alert.alert("Error", "Precio consumidor final (Competencia) debe tener información" )
-    } else if (!this.state.hpSalePrice){
+    } else if (!this.state.inventoryPrice) {
+      Alert.alert("Error", "Costo ferretero debe tener información")
+    } else if (!this.state.salePrice) {
+      Alert.alert("Error", "Precio consumidor final (Competencia) debe tener información")
+    } else if (!this.state.hpSalePrice) {
       Alert.alert("Error", "Precio consumidor final (HP) debe tener información")
     } else {
-    let employeeCode = ''
-    try {
-      employeeCode = await AsyncStorage.getItem('HPCode');
-    } catch(error) {
-      console.log(error)
-    }
+      let employeeCode = ''
+      try {
+        employeeCode = await AsyncStorage.getItem('HPCode');
+      } catch (error) {
+        console.log(error)
+      }
 
-    if (!this.state.lat && !this.state.long){
-      console.log("getting lat long again... ")
-      this._getLocationAsync()
-    }
+      if (!this.state.lat && !this.state.long) {
+        console.log("getting lat long again... ")
+        this._getLocationAsync()
+      }
 
-    const productCode = this.state.productCode.split(",")[0]
-    const clientCode = this.state.clientCode.split(",")[0]
-    this.setState({ isSavingData: true })
+      const productCode = this.state.productCode.split(",")[0]
+      const clientCode = this.state.clientCode.split(",")[0]
+      this.setState({ isSavingData: true })
 
-    const newData = new FormData();
-    
-    capturedImage = this.state.photoId
-    newData.append('employeeCode', employeeCode)
-    newData.append('sku', productCode)
-    newData.append('invPrice', this.state.inventoryPrice)
-    newData.append('salePrice', this.state.salePrice)
-    newData.append('discount', this.state.hasDiscount ? '1' : '0')
-    newData.append('latlng', `${this.state.lat},${this.state.long}`)
-    newData.append('sellingpricehp', this.state.hpSalePrice)
-    newData.append('obs', this.state.observations)
-    newData.append('client', clientCode)
-    newData.append('brand', this.state.brand)
-    if (this.state.photoId) {
-      const today = new Date().getTime()
-      const photo = {
-        uri: this.state.photoId,
-        type: 'image/jpeg',
-        name: `${employeeCode}$${productCode}$${today}`,
-      };
-      newData.append('image', photo)
+      const newData = new FormData();
+
+      capturedImage = this.state.photoId
+      newData.append('employeeCode', employeeCode)
+      newData.append('sku', productCode)
+      newData.append('invPrice', this.state.inventoryPrice)
+      newData.append('salePrice', this.state.salePrice)
+      newData.append('discount', this.state.hasDiscount ? '1' : '0')
+      newData.append('latlng', `${this.state.lat},${this.state.long}`)
+      newData.append('sellingpricehp', this.state.hpSalePrice)
+      newData.append('obs', this.state.observations)
+      newData.append('client', clientCode)
+      newData.append('brand', this.state.brand)
+      if (this.state.photoId) {
+        const today = new Date().getTime()
+        const photo = {
+          uri: this.state.photoId,
+          type: 'image/jpeg',
+          name: `${employeeCode}$${productCode}$${today}`,
+        };
+        newData.append('image', photo)
+      }
+
+      if (this.state.invoiceId) {
+        const today = new Date().getTime()
+        const photo = {
+          uri: this.state.invoiceId,
+          type: 'image/jpeg',
+          name: `invoice$${employeeCode}$${productCode}$${today}`
+        };
+        newData.append('invoiceImg', photo)
+      }
+      try {
+        const response = await fetch(
+          'http://192.168.137.1:5000/storeData',
+          {
+            method: 'POST',
+            credentials: 'same-origin',
+            body: newData
+          }
+        );
+        this.setState({ isSavingData: false })
+        this.setState({ isSavingData: false, salePrice: '', inventoryPrice: '', photoId: '', pictureTaked: false, productCode: '', clientCode: '', invoiceId: '', invoiceTaked: false, hpSalePrice: '', observations: '', brand: '' })
+        Alert.alert("Enviado", "Datos enviados")
+      } catch (error) {
+        Alert.alert("Error", "Por favor intente de nuevo")
+        this.setState({ isSavingData: false })
+      }
     }
-    
-    if (this.state.invoiceId){
-      const today = new Date().getTime()
-      const photo = {
-        uri: this.state.invoiceId,
-        type: 'image/jpeg',
-        name: `invoice$${employeeCode}$${productCode}$${today}`
-      };
-      newData.append('invoiceImg', photo)
-    }
-    try {
-      const response = await fetch(
-        'http://192.168.137.1:5000/storeData',
-        {
-          method: 'POST',
-          credentials: 'same-origin',
-          body: newData
-        }
-      );
-      this.setState({isSavingData: false})
-      this.setState({ isSavingData: false, salePrice: '', inventoryPrice: '', photoId: '', pictureTaked: false, productCode: '', clientCode: '', invoiceId: '', invoiceTaked: false, hpSalePrice: '', observations: '', brand: '' })
-      Alert.alert("Enviado", "Datos enviados")
-    } catch (error) {
-      Alert.alert("Error", "Por favor intente de nuevo")
-      this.setState({ isSavingData: false })
-    }
-  }
   }
 
   stateReducer = (reducer, newState) => {
@@ -410,7 +424,7 @@ export default class App extends React.Component {
         break;
       case "ClientCode":
         const clientCode = newState
-        this.setState({clientCode})
+        this.setState({ clientCode })
         break;
       case "SumbitButton":
         alert("Sending...")
@@ -444,19 +458,19 @@ export default class App extends React.Component {
         this.setState({ cameraViewOpen: newState })
         break;
       case "takeInvoicePicture":
-        this.setState({invoiceCameraViewOpen: newState})
+        this.setState({ invoiceCameraViewOpen: newState })
         break;
       case "hpSalePrice":
         const hpSalePrice = newState
-        this.setState({hpSalePrice})
+        this.setState({ hpSalePrice })
         break;
       case "observations":
         const observations = newState
-        this.setState({observations})
+        this.setState({ observations })
         break;
       case "brand":
         const brand = newState
-        this.setState({brand})
+        this.setState({ brand })
         break;
       case "refreshCatalog":
         this._retriveCatalog()
@@ -466,15 +480,15 @@ export default class App extends React.Component {
   }
 
   _takePicture = async (pictureType) => {
-    if (this.camera){
-      this.setState({pictureTaking: true})
-      const image = await this.camera.takePictureAsync({skipProcessing: false, quality: 0.3 });
-      this.setState({pictureTaking: false})
-      if(pictureType == "invoiceImage"){
-        this.setState({invoiceId: image.uri, invoiceTaked: true})
+    if (this.camera) {
+      this.setState({ pictureTaking: true })
+      const image = await this.camera.takePictureAsync({ skipProcessing: false, quality: 0.3 });
+      this.setState({ pictureTaking: false })
+      if (pictureType == "invoiceImage") {
+        this.setState({ invoiceId: image.uri, invoiceTaked: true })
       }
       else {
-        this.setState({photoId: image.uri, pictureTaked: true})
+        this.setState({ photoId: image.uri, pictureTaked: true })
       }
     }
   }
@@ -492,62 +506,62 @@ export default class App extends React.Component {
           autoFocus={Camera.Constants.AutoFocus.on}
         >
           <View style={styles.topToolBar}>
-            <View> 
+            <View>
               <View style={styles.alignBackButton}>
-                <TouchableWithoutFeedback> 
+                <TouchableWithoutFeedback>
                   <Icon
-                    onPress={() => {  isInvoiceImage ? this.setState({invoiceCameraViewOpen: false, invoiceTaked: false, invoiceId: ''}) :  this.setState({cameraViewOpen: false, pictureTaked: false, photoId: ''}) }}
+                    onPress={() => { isInvoiceImage ? this.setState({ invoiceCameraViewOpen: false, invoiceTaked: false, invoiceId: '' }) : this.setState({ cameraViewOpen: false, pictureTaked: false, photoId: '' }) }}
                     name="arrow-left"
                     size={30}
                     color="white"
-                   />
+                  />
                 </TouchableWithoutFeedback>
-                </View>
               </View>
             </View>
+          </View>
 
           <View style={styles.bottomToolbar}>
 
-          <View> 
+            <View>
 
-          <View style={styles.alignCenter}>
+              <View style={styles.alignCenter}>
                 <TouchableWithoutFeedback
-                    onPressOut={() => !this.state.pictureTaking && this._takePicture(pictureType)}
+                  onPressOut={() => !this.state.pictureTaking && this._takePicture(pictureType)}
                 >
                   <View style={[styles.captureBtn]}>
                   </View>
                 </TouchableWithoutFeedback>
-          </View>
+              </View>
 
-          </View>
+            </View>
           </View>
         </Camera>
       </View>
     )
   }
-  
-  loadImageView (pictureType) {
-   const isInvoiceImage = pictureType === "invoiceImage"
-   const capturedImage =  isInvoiceImage ? this.state.invoiceId  : this.state.photoId
+
+  loadImageView(pictureType) {
+    const isInvoiceImage = pictureType === "invoiceImage"
+    const capturedImage = isInvoiceImage ? this.state.invoiceId : this.state.photoId
     return (
       <View style={{ flex: 1, position: 'relative' }}>
         <Image
-        style={{ zIndex: -1, position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: winWidth, height: winHeight }}
-        source={{uri: capturedImage}}
+          style={{ zIndex: -1, position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: winWidth, height: winHeight }}
+          source={{ uri: capturedImage }}
         />
         <Icon
-          onPress={() => {  isInvoiceImage ? this.setState({invoiceTaked: false, invoiceId: ''}) :  this.setState({pictureTaked: false, photoId: ''}) }}
-          style={{position: 'absolute', top: 50, left: 15, zIndex: 1000}}
+          onPress={() => { isInvoiceImage ? this.setState({ invoiceTaked: false, invoiceId: '' }) : this.setState({ pictureTaked: false, photoId: '' }) }}
+          style={{ position: 'absolute', top: 50, left: 15, zIndex: 1000 }}
           name="arrow-left"
           size={30}
           color="white"
         />
         <Icon
-            onPress={() => { isInvoiceImage ? this.setState({invoiceTaked: false, invoiceCameraViewOpen: false}) :  this.setState({pictureTaked: false, cameraViewOpen: false}) }}
-            style={{position: 'absolute', bottom: 50, right: 50}}
-            name="check-circle"
-            size={60}
-            color="#0e887b"
+          onPress={() => { isInvoiceImage ? this.setState({ invoiceTaked: false, invoiceCameraViewOpen: false }) : this.setState({ pictureTaked: false, cameraViewOpen: false }) }}
+          style={{ position: 'absolute', bottom: 50, right: 50 }}
+          name="check-circle"
+          size={60}
+          color="#0e887b"
         />
       </View>
     )
@@ -568,18 +582,18 @@ export default class App extends React.Component {
       return (
         this.loadCameraView("productImage")
       )
-    } else if(this.state.pictureTaked){
+    } else if (this.state.pictureTaked) {
       return (
         this.loadImageView("productImage")
       )
     }
-    else if (this.state.invoiceCameraViewOpen & !this.state.invoiceTaked){
-      return(
+    else if (this.state.invoiceCameraViewOpen & !this.state.invoiceTaked) {
+      return (
         this.loadCameraView("invoiceImage")
       )
     }
     else if (this.state.invoiceTaked) {
-      return(
+      return (
         this.loadImageView("invoiceImage")
       )
     }
@@ -588,7 +602,7 @@ export default class App extends React.Component {
         state: this.state,
         stateReducer: this.stateReducer,
         films: PRODUCTS.concat(this.state.storedCatalog).slice(),
-        clients:  CLIENTS.concat(this.state.storedClients).slice(),
+        clients: CLIENTS.concat(this.state.storedClients).slice(),
         storedCatalog: this.state.storedCatalog
       }
       return (
@@ -609,7 +623,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  alignBackButton : {
+  alignBackButton: {
     marginTop: 30,
     marginLeft: 20
   },
@@ -622,31 +636,31 @@ const styles = StyleSheet.create({
     position: 'absolute',
     height: 100,
     top: 25,
-},
+  },
   bottomToolbar: {
     width: winWidth,
     position: 'absolute',
     height: 100,
     bottom: 0,
-},
-captureBtn: {
-  width: 60,
-  height: 60,
-  borderWidth: 2,
-  borderRadius: 60,
-  borderColor: "#FFFFFF",
-},
-captureBtnActive: {
-  width: 80,
-  height: 80,
-},
-activityContainer: {
-  flex: 1,
-  justifyContent: 'center'
-},
-activityHorizontal: {
-  flexDirection: 'row',
-  justifyContent: 'space-around',
-  padding: 10
-}
+  },
+  captureBtn: {
+    width: 60,
+    height: 60,
+    borderWidth: 2,
+    borderRadius: 60,
+    borderColor: "#FFFFFF",
+  },
+  captureBtnActive: {
+    width: 80,
+    height: 80,
+  },
+  activityContainer: {
+    flex: 1,
+    justifyContent: 'center'
+  },
+  activityHorizontal: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    padding: 10
+  }
 });
