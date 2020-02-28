@@ -18,6 +18,8 @@ import { CLIENTS } from "./assets/data/clients";
 const store = createStore(appReducers);
 const { width: winWidth, height: winHeight } = Dimensions.get('window');
 
+const SERVER = "http://192.168.137.1:5000"
+
 export default class App extends React.Component {
   constructor(props) {
     super(props)
@@ -48,11 +50,10 @@ export default class App extends React.Component {
       lat: '',
       long: '',
       observations: '',
-      brand: 'Tolsen',
+      brand: '',
       fetchingCatalog: false
     }
   }
-
 
   async componentWillMount() {
     const { statusCamera } = await Permissions.askAsync(Permissions.CAMERA);
@@ -95,7 +96,8 @@ export default class App extends React.Component {
 
       this.setState({ fetchingCatalog: true })
       const catalog = await fetch(
-        'http://192.168.137.1:5000/getCatalog',
+        
+        `${SERVER}/getCatalog`,
         {
           method: 'GET',
           credentials: 'same-origin'
@@ -104,7 +106,7 @@ export default class App extends React.Component {
 
 
       const clients = await fetch(
-        'http://192.168.137.1:5000/getClients',
+        `${SERVER}/getClients`,
         {
           method: 'GET',
           credentials: 'same-origin'
@@ -159,7 +161,7 @@ export default class App extends React.Component {
       if (lastCatalogFetch !== null) {
         if (lastCatalogFetch != today && ((new Date(today) - new Date(lastCatalogFetch)) / (1000 * 60 * 60 * 24)) >= 15) {
           const response = await fetch(
-            'http://192.168.137.1:5000/getCatalog',
+            `${SERVER}/getCatalog`,
             {
               method: 'GET',
               credentials: 'same-origin'
@@ -190,7 +192,7 @@ export default class App extends React.Component {
 
         // IF non data, fetch catalog
         const response = await fetch(
-          'http://192.168.137.1:5000/getCatalog',
+          `${SERVER}/getCatalog`,
           {
             method: 'GET',
             credentials: 'same-origin'
@@ -229,7 +231,7 @@ export default class App extends React.Component {
       if (lastClientFetch !== null) {
         if (lastClientFetch != today && ((new Date(today) - new Date(lastClientFetch)) / (1000 * 60 * 60 * 24)) >= 15) {
           const response = await fetch(
-            'http://192.168.137.1:5000/getClients',
+            `${SERVER}/getClients`,
             {
               method: 'GET',
               credentials: 'same-origin'
@@ -260,7 +262,7 @@ export default class App extends React.Component {
 
         // IF non data, fetch catalog
         const response = await fetch(
-          'http://192.168.137.1:5000/getClients',
+          `${SERVER}/getClients`,
           {
             method: 'GET',
             credentials: 'same-origin'
@@ -398,7 +400,7 @@ export default class App extends React.Component {
       }
       try {
         const response = await fetch(
-          'http://192.168.137.1:5000/storeData',
+          `${SERVER}/storeData`,
           {
             method: 'POST',
             credentials: 'same-origin',
