@@ -234,7 +234,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#40515b',
     height: 40,
     paddingLeft: 3,
-    color: 'white'
+    color: 'white',
+    fontSize: 14
   },
   ...androidStyles
 });
