@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Constants from 'expo-constants';
 
-import { SectionList, Image, StyleSheet, Text, View, AsyncStorage, TextInput, Button, Keyboard, Alert, ToastAndroid } from 'react-native';
+import { SectionList, Image, StyleSheet, Text, View, AsyncStorage, TextInput, Button, Keyboard, Alert, ToastAndroid, TouchableOpacity } from 'react-native';
 
 const Toast = (props) => {
   if (props.visible) {
@@ -32,6 +32,7 @@ export default class SettingsScreen extends React.Component {
     const value = await AsyncStorage.getItem('HPCode');
     this.setState({ employeeCode: value })
   }
+
 
   
 
@@ -129,10 +130,20 @@ SettingsScreen.navigationOptions = {
 };
 
 
+const removeKeys = async () => {
+  await AsyncStorage.removeItem('LastCatalogFetch');
+  await AsyncStorage.removeItem('LastClientFetch');
+  await AsyncStorage.removeItem('StoredCatalog');
+  await AsyncStorage.removeItem('StoredClients');
+}
+
 const AppIconPreview = () => {
-  const iconUrl = '../assets/images/icon.png';
-  return <Image source={require('../assets/images/hpLogo.png')} style={{ width: 100, height: 62 }} resizeMode="contain" />;
-};
+  return (
+  <TouchableOpacity onLongPress={() => removeKeys() } >
+   <Image source={require('../assets/images/hpLogo.png')} style={{ width: 100, height: 62 }} resizeMode="contain" />
+  </TouchableOpacity>
+  )
+  }
 
 const Color = ({ value }) => {
   if (!value) {
